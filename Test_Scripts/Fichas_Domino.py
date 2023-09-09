@@ -1,14 +1,18 @@
-class Ficha:
+#------------Class Bones------------#   
+class Bones:
+    #Bone refers to the name of each domino piece
     __val1 = -1
     __val2 = -1
-    val_no_disp = -1
-    val_jugable = -1
+        #This variables has been initialized to -1 as the piece has not been played yet.
+    played_value = -1
+    playable_value = -1
     
+#Constructor
     def __init__(self, valor1, valor2):
         self.__val1 = max(valor1, valor2)
         self.__val2 = min(valor1, valor2)
         
- #------Getters and Setters------#   
+ #Getters and Setters
     def get_val1(self):
         return self.__val1
     
@@ -20,17 +24,26 @@ class Ficha:
     
     def set_val2(self, aux_va2):
         self.__val2 = aux_va2
+
+    def get_Status(self):
+        return [self.playable_value, self.played_value]
+
+    def get_playable_value(self):
+        return self.playable_value
     
-    
-    def print_Atr (self):
-        print("valor 1: ", self.__val1)
-        print("valor 2: ", self.__val2)
-        print("valor Jugable: ", self.val_jugable)
-        print("valor Jugado: ", self.val_no_disp)
+#toString   
+    def Atributes (self):
+        atr = ""
+        atr += "\nvalor 1: " + str(self.__val1)
+        atr += "\nvalor 2: " + str(self.__val2)
+        atr += "\nvalor Jugado: " + str(self.played_value)
+        atr += "\n\tvalor Jugable: " + str(self.playable_value)
+        print(atr)
         
+#CompareTo
+    #returns [x, y] where x and y refers to played and playable values        
     def compare_to_val(self, val):
-        #[x, y] x el valor no disponible
-        #y y el valor jugable
+    
         if val == self.__val1:
             return [self.__val1,self.__val2]
         else:
@@ -38,42 +51,100 @@ class Ficha:
                 return [self.__val2, self.__val1]
             else:
                 return [-1,-1]
-            
-    def  Jugar_ficha(self, val_j):
-        [self.val_no_disp, self.val_jugable] = self.compare_to_val(val_j)
-        if self.val_jugable >= 0:
+    def __eq__(self, other):
+        return (self.__val1, self.__val2) == (other.__val1, other.__val2)
+    
+#Play_piece            
+    #Set the values of played and playable variables            
+    def  play_piece(self, val_j):
+        [self.played_value, self.playable_value] = self.compare_to_val(val_j)
+        if self.playable_value >= 0:
             return True
         else:
             return False
-    
-    def getStatus(self, is_Left):
-        if is_Left:
-            return [self.val_jugable, self.val_no_disp]
-        else:
-            return [self.val_no_disp, self.val_jugable]
-
-    def primera_Jugada(self, is_Left):
+        
+#first_in_game
+    #Set the piece as the first played piece
+    def first_in_game(self, is_Left):
         aux_valJ = -1
         if is_Left:
             aux_valJ = self.__val1
         else:
             aux_valJ = self.__val2
-        self.val_jugable = aux_valJ
+        self.playable_value = aux_valJ
         return aux_valJ
+    
+ #------------Class Bones------------#   
+class Dominoes_Stack:
+    d_Stack = []
+    top_piece = Bones(-1, -1)
 
+    def is_empty(self):
+        return len(self.d_Stack)==0
+    
+    def size(self):
+        return len(self.d_Stack)
 
-ficha1 = Ficha(5, 6)
+    def top(self):
+        return self.top_piece
+    
+    def top_value(self):
+        return self.top_piece.get_playable_value()
+    
+#return true if the piece is already on the stack
+    def alredy_in_stack(self, bone):
+        already = False
+        for auxBone in self.d_Stack:
+            if auxBone == bone:
+                already = True
+        return already
+    
+#return true if the piece is pushed to the stack
+    def push(self, bone):
+        if not(self.alredy_in_stack(bone)):
+            self.d_Stack.append(bone)
+            self.top_piece = bone
+            return True
+        else:
+            return False
+        
+        
+#----Tests of class Bones
+ficha1 = Bones(5, 6)
+ficha1.Atributes()
 
-ficha1.print_Atr()
+ficha2 = Bones(4, 6)
+ficha2.Atributes()
 
-ficha1.Jugar_ficha(6)
+ficha3 = Bones(5, 6)
+ficha3.Atributes()
 
-ficha1.primera_Jugada(True)
-ficha1.primera_Jugada(False)
+ficha4 = Bones(2, 2)
+ficha4.Atributes()
 
+ficha1 == ficha3
+    # ficha1.play_piece(6)
 
-ficha1.getStatus(True)
+    # ficha1.first_in_game(True)
+    # ficha1.first_in_game(False)
 
+    # ficha1.get_Status(True)
+#----Tests of class Stack
+s_Izq = Dominoes_Stack()
+print(s_Izq.is_empty())
+print(s_Izq.size())
+
+s_Izq.push(ficha3)
+
+print(s_Izq.alredy_in_stack(ficha2))
+s_Izq.push(ficha2)
+
+s_Izq.top().Atributes()
+
+s_Izq.push(ficha4)
+s_Izq.top().Atributes()
+
+s_Izq.top_value()
 
 
         
