@@ -161,6 +161,9 @@ ficha3.Atributes()
 ficha4 = Bones(2, 2)
 ficha4.Atributes()
 
+ficha5 = Bones(1, 1)
+ficha5.Atributes()
+
 ficha1 == ficha3
     # ficha1.play_piece(6)
 
@@ -186,8 +189,9 @@ s_Izq.top_value()
 
 s_Izq.place_first(ficha4)
 s_Izq.push_piece(ficha3)
+s_Izq.push_piece(ficha3)
 s_Izq.push_piece(ficha2)
-
+s_Izq.push_piece(ficha5)
 
         
     
