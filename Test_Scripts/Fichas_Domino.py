@@ -1,4 +1,4 @@
-#------------Class Bones------------#   
+#------------------------Class Bones------------------------#   
 class Bones:
     #Bone refers to the name of each domino piece
     __val1 = -1
@@ -32,6 +32,10 @@ class Bones:
         atr = "["+str(self.played_value) + ":" + str(self.playable_value)+"], "
         return atr
     
+    def print_values(self):
+        atr = "["+str(self.__val1) + ":" + str(self.__val2)+"], "
+        return atr
+    
     def get_playable_value(self):
         return self.playable_value
     
@@ -42,7 +46,8 @@ class Bones:
         atr += "\nvalor 2: " + str(self.__val2)
         atr += "\nvalor Jugado: " + str(self.played_value)
         atr += "\n\tvalor Jugable: " + str(self.playable_value)
-        print(atr)
+        # print(atr)
+        return atr
         
 #CompareTo
     #returns [x, y] where x and y refers to played and playable values        
@@ -83,7 +88,7 @@ class Bones:
         self.played_value = aux_valNoJ
         return aux_valJ
     
- #------------Class Bones------------#   
+ #------------------------Class Bones------------------------#   
 class Dominoes_Stack:
     d_Stack = []
     top_piece = Bones(-1, -1)
@@ -145,11 +150,69 @@ class Dominoes_Stack:
         else:
             return "Error: Already played"
         
+#------------------------Class Board------------------------#
+class Board:
+    
+    LeftTiles = Dominoes_Stack(True)
+    RightTiles = Dominoes_Stack(False)
+
+    playerSet = []
+    
+    Tiles = []
+    
+    def __init__(self):
+        self.create_Tales()
+        
+                    
+    def create_Tales(self):
+        for i in range(7):
+            for j in range(7):
+                aBone = Bones(i, j)
+                if aBone not in self.Tiles:
+                    self.Tiles.append(aBone)
+                    
+    def print_Tiles(self):
+        cad = ""
+        for obj in self.Tiles:
+            cad += obj.print_values()
+        return cad
+    
+    def add_to_player_set(self, bone):
+        if (bone not in self.playerSet) and (bone in self.Tiles):
+            self.playerSet.append(bone)
+            self.Tiles.remove(bone)
+        else:
+            print("Cant add to player set, already used on the board")
+    
+    def remove_from_player_set(self, bone):
+        if (bone in self.playerSet):
+            self.playerSet.remove(bone)
+        else:
+            print("Not in player set thus cant remove")
+    
+            
+    def print_player_set(self):
+        Atr = ""
+        for obj in self.playerSet:
+            Atr += obj.print_values()
+        print(Atr)
+        return Atr
+    
+            
+        
+        
+        
+    
+    
+    
+        
+    
+
         
             
         
 #----Tests of class Bones
-ficha1 = Bones(5, 6)
+ficha1 = Bones(0, 0)
 ficha1.Atributes()
 
 ficha2 = Bones(4, 6)
@@ -175,12 +238,14 @@ ficha1 == ficha3
 s_Izq = Dominoes_Stack(False)
 print(s_Izq.is_empty())
 print(s_Izq.size())
+
     # s_Izq.push(ficha3)
     # print(s_Izq.alredy_in_stack(ficha2))
     # s_Izq.push(ficha2)
     # s_Izq.top().Atributes()
     # s_Izq.push(ficha4)
     # s_Izq.top().Atributes()
+
 s_Izq.display_game_stack()
 s_Izq.top_value()
     # s_Izq.top_value()
@@ -193,5 +258,11 @@ s_Izq.push_piece(ficha3)
 s_Izq.push_piece(ficha2)
 s_Izq.push_piece(ficha5)
 
-        
-    
+new_Game = Board()
+print(new_Game.print_Tiles())
+print(len(new_Game.Tiles))
+
+# new_Game.add_to_player_set(ficha1)
+# new_Game.print_player_set()
+# new_Game.remove_from_player_set(ficha1)
+# new_Game.remove_from_player_set(ficha2)
