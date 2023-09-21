@@ -51,8 +51,26 @@ class Board:
         else:
             print("Not in player set thus cant remove")
     
-            
     def print_player_set(self):
+        Atr = ""
+        for obj in self.playerSet:
+            Atr += obj.print_values()
+        print(Atr)
+        return Atr
+    
+    def show_svaliable_moves(self):
+        avaliable = []
+        if self.start_Flag:
+            for obj in self.playerSet:
+                if obj.has_val(self.LeftTiles.top_value()) or obj.has_val(self.RightTiles.top_value()):
+                    avaliable.append(obj)
+            if not len(avaliable)>0:
+                print("No avaliable moves")
+        else:
+            print("Missing first played piece")
+            
+            
+            
         Atr = ""
         for obj in self.playerSet:
             Atr += obj.print_values()
