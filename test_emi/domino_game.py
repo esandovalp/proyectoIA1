@@ -211,3 +211,4 @@ class DominoGame:
             self.current_player = previous_state["current_player"]
             self.board = previous_state["board"]
             self.hands = previous_state["hands"]
+            

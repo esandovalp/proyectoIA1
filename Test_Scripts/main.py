@@ -13,6 +13,9 @@ class Board:
     
     start_Flag = False
     maximising_turn = False
+
+    
+
     
     
     def __init__(self):
@@ -31,6 +34,14 @@ class Board:
         for obj in self.Tiles:
             cad += obj.print_values()
         return cad
+    
+    def print_board(self):
+        aux_l = self.LeftTiles.get_list()
+        aux_l.reverse()
+        aux_stack = Dominoes_Stack(self.LeftTiles.left_flag)
+        aux_str = aux_stack.display_game_stack()
+        aux_str += self.RightTiles.display_game_stack()
+        return aux_str
     
     def add_to_player_set(self, bone):
         if (bone not in self.playerSet) and (bone in self.Tiles):
@@ -64,30 +75,25 @@ class Board:
             for obj in self.playerSet:
                 if obj.has_val(self.LeftTiles.top_value()) or obj.has_val(self.RightTiles.top_value()):
                     avaliable.append(obj)
+                else:
+                    s = str(self.LeftTiles.top_value()) + "," + str(self.RightTiles.top_value()) + " - "
+                    print(s)
             if not len(avaliable)>0:
                 print("No avaliable moves")
         else:
             print("Missing first played piece")
-            
-            
-            
         Atr = ""
-        for obj in self.playerSet:
+        for obj in avaliable:
             Atr += obj.print_values()
         print(Atr)
         return Atr
     
-            
-        
-        
-        
-    
-    
-    
+    def play_first_tile(self, tile):
+        self.RightTiles.place_first(tile)
+        self.LeftTiles.place_first(tile)
+        self.start_Flag = True
         
     
-
-        
             
         
 #----Tests of class Bones
@@ -106,7 +112,7 @@ ficha4.Atributes()
 ficha5 = Bones(1, 1)
 ficha5.Atributes()
 
-ficha6 = Bones(1, 2)
+ficha6 = Bones(5, 2)
 ficha6.Atributes()
 
 ficha7 = Bones(3, 5)
@@ -114,6 +120,9 @@ ficha7.Atributes()
 
 ficha8 = Bones(4, 4)
 ficha8.Atributes()
+
+ficha9 = Bones(5, 4)
+ficha9.Atributes()
 
 ficha1 == ficha3
     # ficha1.play_piece(6)
@@ -123,28 +132,28 @@ ficha1 == ficha3
 
     # ficha1.get_Status(True)
 #----Tests of class Stack
-s_Izq = Dominoes_Stack(False)
-print(s_Izq.is_empty())
-print(s_Izq.size())
+# s_Izq = Dominoes_Stack(False)
+# print(s_Izq.is_empty())
+# print(s_Izq.size())
 
-    # s_Izq.push(ficha3)
-    # print(s_Izq.alredy_in_stack(ficha2))
-    # s_Izq.push(ficha2)
-    # s_Izq.top().Atributes()
-    # s_Izq.push(ficha4)
-    # s_Izq.top().Atributes()
+#     # s_Izq.push(ficha3)
+#     # print(s_Izq.alredy_in_stack(ficha2))
+#     # s_Izq.push(ficha2)
+#     # s_Izq.top().Atributes()
+#     # s_Izq.push(ficha4)
+#     # s_Izq.top().Atributes()
 
-s_Izq.display_game_stack()
-s_Izq.top_value()
-    # s_Izq.top_value()
-    # fichaAux = s_Izq.pop()
-    # fichaAux.Atributes()
+# s_Izq.display_game_stack()
+# s_Izq.top_value()
+#     # s_Izq.top_value()
+#     # fichaAux = s_Izq.pop()
+#     # fichaAux.Atributes()
 
-s_Izq.place_first(ficha4)
-s_Izq.push_piece(ficha3)
-s_Izq.push_piece(ficha3)
-s_Izq.push_piece(ficha2)
-s_Izq.push_piece(ficha5)
+# s_Izq.place_first(ficha4)
+# s_Izq.push_piece(ficha3)
+# s_Izq.push_piece(ficha3)
+# s_Izq.push_piece(ficha2)
+# s_Izq.push_piece(ficha5)
 
 new_Game = Board()
 print(new_Game.print_Tiles())
@@ -160,6 +169,12 @@ new_Game.set_initial_player_hand(ficha2)
 new_Game.set_initial_player_hand(ficha3)
 new_Game.set_initial_player_hand(ficha4)
 new_Game.set_initial_player_hand(ficha5)
-new_Game.set_initial_player_hand(ficha6)
+new_Game.set_initial_player_hand(ficha9)
 new_Game.set_initial_player_hand(ficha7)
 new_Game.set_initial_player_hand(ficha8)
+new_Game.set_initial_player_hand(ficha6)
+
+
+new_Game.print_board()
+new_Game.play_first_tile(ficha8)
+new_Game.show_svaliable_moves()

@@ -29,7 +29,7 @@ class Bones:
         return [self.playable_value, self.played_value]
     
     def print_for_game(self):
-        atr = "["+str(self.played_value) + ":" + str(self.playable_value)+"], "
+        atr = "["+str(self.played_value) + ":>" + str(self.playable_value)+"], "
         return atr
     
     def print_values(self):
@@ -88,13 +88,12 @@ class Bones:
 
         self.playable_value = aux_valJ
         self.played_value = aux_valNoJ
-        return aux_valJ
     
     
 #------------------------Class Stacks------------------------#       
 class Dominoes_Stack:
     d_Stack = []
-    top_piece = Bones(-1, -1)
+    top_piece = Bones(10, 10)
     left_flag = False
     
     def __init__(self, isLeft):
@@ -153,4 +152,11 @@ class Dominoes_Stack:
             self.push(bone)
         else:
             return "Error: Already played"
+    
+    def get_list(self):
+        aux_list = self.d_Stack
+        return aux_list
+    
+    def set_list(self, other):
+        self.d_Stack = other
         
