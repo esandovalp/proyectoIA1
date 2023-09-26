@@ -117,21 +117,6 @@ class DominoGame:
                     self.board.pop()
                 self.hands[self.current_player].append(move)
             return min_eval
-        
-    def get_best_move_with_alpha_beta(self, depth):
-        legal_moves = self.generate_legal_moves()
-        best_move = None
-        alpha = float("-inf")
-        beta = float("inf")
-        for move in legal_moves:
-            self.play_domino(move, self.board[-1][1] if self.board else 0)
-            eval_score = self.minimax(depth - 1, False)  # Use the minimax function
-            if eval_score > alpha:
-                alpha = eval_score
-                best_move = move
-            self.board.pop()
-            self.hands[self.current_player].append(move)
-        return best_move
 
     def choose_best_move(self, depth, time_limit=None):
         best_move = None
