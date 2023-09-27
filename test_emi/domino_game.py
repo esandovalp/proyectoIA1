@@ -126,7 +126,7 @@ class juego_domino:
                 self.manos[self.jugador_actual].append(mov)
             return min_eval
 
-    # quitamos el limite de tiempo
+    # quitamos el limite de tiempo?
     def escoge_mejor_mov(self, depth, limite_tiempo=None):
         mejor_mov = None
         mejor_puntuacion = float("-inf")
