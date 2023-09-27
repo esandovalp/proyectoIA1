@@ -1,199 +1,208 @@
 import time
 
-class DominoGame:
-    def __init__(self, players):
-        # Initialize the game with a list of player names
-        self.players = players
-        self.board = []  # The current state of the board (list of played dominoes)
-        self.hands = {player: [] for player in players}  # Dictionary to store each player's hand
-        self.current_player = players[0]  # Start with the first player's turn
+# falta documentar 
+class juego_domino:
+    def __init__(self, jugadores):
+        # Initialize the game with a list of jugador names
+        self.jugadores = jugadores
+        self.tablero = []  # The current state of the tablero (list of played dominoes)
+        self.manos = {jugador: [] for jugador in jugadores}  # Dictionary to store each jugador's hand
+        self.jugador_actual = jugadores[0]  # Start with the first jugador's turn
 
-    def switch_player(self):
-        # Switch to the next player's turn
-        current_index = self.players.index(self.current_player)
-        next_index = (current_index + 1) % len(self.players)
-        self.current_player = self.players[next_index]
+    def cambiar_jugador(self):
+        # Switch to the next jugador's turn
+        indice_actual = self.jugadores.index(self.jugador_actual)
+        sig_indice = (indice_actual + 1) % len(self.jugadores)
+        self.jugador_actual = self.jugadores[sig_indice]
 
     # test def
-    def play_domino(self, domino, end):
-        # Play a domino on the board
-        if domino in self.hands[self.current_player]:
-            self.hands[self.current_player].remove(domino)
-            if not self.board:
-                # If the board is empty, add the domino
-                self.board.append(domino)
-            elif domino[0] == end:
-                # If the domino matches the end value, add it to the beginning of the board
-                self.board.insert(0, domino)
-            elif domino[1] == end:
-                # If the domino matches the end value, add it to the end of the board
-                self.board.append(domino)
+    def juega_ficha(self, ficha, cola_tablero):
+        # Play a domino on the tablero
+        if ficha in self.manos[self.jugador_actual]:
+            self.manos[self.jugador_actual].remove(ficha)
+            if not self.tablero:
+                # If the tablero is empty, add the domino
+                self.tablero.append(ficha)
+            elif ficha[0] == cola_tablero:
+                # If the domino matches the end value, add it to the beginning of the tablero
+                self.tablero.insert(0, ficha)
+            elif ficha[1] == cola_tablero:
+                # If the domino matches the end value, add it to the end of the tablero
+                self.tablero.append(ficha)
             else:
                 # Invalid move
-                print("Invalid move. Domino does not match the board.")
+                print("Movimiento ilegal. La ficha no coincide con la del tablero.")
                 return False
-            self.switch_player()
+            self.cambiar_jugador()
             return True
         else:
-            print("Invalid move. Domino not in the player's hand.")
+            print("Movimiento imposible. La ficha no está disponible.")
             return False
 
-    def get_current_state(self):
+    def get_estado_actual(self):
         # Get the current state of the game
         return {
-            "current_player": self.current_player,
-            "board": self.board,
-            "hands": self.hands,
+            "jugador_actual": self.jugador_actual,
+            "tablero": self.tablero,
+            "manos": self.manos
         }
 
-    def is_game_over(self):
-        # Check if the game is over (a player has an empty hand)
-        for player in self.players:
-            if not self.hands[player]:
+    def acabo_juego(self):
+        # Check if the game is over (a jugador has an empty hand)
+        for jugador in self.jugadores:
+            if not self.manos[jugador]:
                 return True
         return False
     
-    def generate_legal_moves(self):
-        legal_moves = []
-        for domino in self.hands[self.current_player]:
+    def mov_legales(self):
+        mov_legal = []
+        
+        # check if tablero is empty or if the ficha matches either end 
+        for ficha in self.manos[self.jugador_actual]:
             if (
-                not self.board  # If the board is empty, all dominoes are legal moves
-                or domino[0] == self.board[0][0]  # Match the left end
-                or domino[0] == self.board[-1][1]  # Match the right end
-                or domino[1] == self.board[0][0]  # Match the left end (reversed)
-                or domino[1] == self.board[-1][1]  # Match the right end (reversed)
+                not self.tablero  # If the tablero is empty, all dominoes are legal moves
+                or ficha[0] == self.tablero[0][0]  # Match the left end
+                or ficha[0] == self.tablero[-1][1]  # Match the right end
+                or ficha[1] == self.tablero[0][0]  # Match the left end (reversed)
+                or ficha[1] == self.tablero[-1][1]  # Match the right end (reversed)
             ):
-                legal_moves.append(domino)
-        return legal_moves
+                mov_legal.append(ficha)
+        return mov_legal
     
-    def evaluate_game_state(self):
+    # funcion heurística
+    def evalua_estado_actual(self):
         # Evaluation function for the current game state
-        score = 0
+        puntuacion = 0
 
         # Factor 1: Number of tiles in hand
-        num_tiles_in_hand = len(self.hands[self.current_player])
-        score += num_tiles_in_hand
+        no_fichas_en_mano = len(self.manos[self.jugador_actual])
+        puntuacion += no_fichas_en_mano
 
         # Factor 2: Number of tiles played
-        num_tiles_played = len(self.board)
-        score -= num_tiles_played
+        no_fichas_jugadas = len(self.tablero)
+        puntuacion -= no_fichas_jugadas
 
-        # Factor 3: Board configuration (e.g., try to play doubles early)
-        if num_tiles_played > 0:
-            first_tile = self.board[0]
-            last_tile = self.board[-1]
-            if first_tile[0] == first_tile[1]:
-                # If the first tile on the board is a double, give a bonus
-                score += 2
-            if last_tile[0] == last_tile[1]:
-                # If the last tile on the board is a double, give a bonus
-                score += 2
+        # Factor 3: tablero configuration (e.g., try to play doubles early)
+        if no_fichas_jugadas > 0:
+            primera_ficha = self.tablero[0]
+            ultima_ficha = self.tablero[-1]
+            if primera_ficha[0] == primera_ficha[1]:
+                # If the first tile on the tablero is a double, give a bonus
+                puntuacion += 2
+            if ultima_ficha[0] == ultima_ficha[1]:
+                # If the last tile on the tablero is a double, give a bonus
+                puntuacion += 2
+         
+        # lo agregamos o no?         
+        #factor_de_probabilidad = random.uniform(0,1)
+        #puntuacion += factor_de_probabilidad
 
-        return score
+        return puntuacion
     
-    def minimax(self, depth, maximizing_player):
-        if depth == 0 or self.is_game_over():
-            return self.evaluate_game_state()
+    def minimax(self, depth, jugador_max):
+        if depth == 0 or self.acabo_juego():
+            return self.evalua_estado_actual()
 
-        if maximizing_player:
+        if jugador_max:
             max_eval = float("-inf")
-            legal_moves = self.generate_legal_moves()
-            for move in legal_moves:
-                self.play_domino(move, self.board[-1][1] if self.board else 0)
-                eval_score = self.minimax(depth - 1, False)
-                max_eval = max(max_eval, eval_score)
-                if self.board:
-                    self.board.pop()
-                self.hands[self.current_player].append(move)
+            mov_legal = self.mov_legales()
+            for mov in mov_legal:
+                self.juega_ficha(mov, self.tablero[-1][1] if self.tablero else 0)
+                eval_puntuacion = self.minimax(depth - 1, False)
+                max_eval = max(max_eval, eval_puntuacion)
+                if self.tablero:
+                    self.tablero.pop()
+                self.manos[self.jugador_actual].append(mov)
             return max_eval
         else:
             min_eval = float("inf")
-            legal_moves = self.generate_legal_moves()
-            for move in legal_moves:
-                self.play_domino(move, self.board[-1][1] if self.board else 0)
-                eval_score = self.minimax(depth - 1, True)
-                min_eval = min(min_eval, eval_score)
-                if self.board:
-                    self.board.pop()
-                self.hands[self.current_player].append(move)
+            mov_legal = self.mov_legales()
+            for mov in mov_legal:
+                self.juega_ficha(mov, self.tablero[-1][1] if self.tablero else 0)
+                eval_puntuacion = self.minimax(depth - 1, True)
+                min_eval = min(min_eval, eval_puntuacion)
+                if self.tablero:
+                    self.tablero.pop()
+                self.manos[self.jugador_actual].append(mov)
             return min_eval
 
-    def choose_best_move(self, depth, time_limit=None):
-        best_move = None
-        best_score = float("-inf")
-        start_time = time.time()
+    # quitamos el limite de tiempo
+    def escoge_mejor_mov(self, depth, limite_tiempo=None):
+        mejor_mov = None
+        mejor_puntuacion = float("-inf")
+        empieza_tiempo = time.time()
 
-        legal_moves = self.generate_legal_moves()
+        mov_legal = self.mov_legales()
 
-        for move in legal_moves:
-            self.play_domino(move, self.board[-1][1] if self.board else 0)
-            eval_score = self.minimax(depth - 1, False)  # Use the minimax function
+        for mov in mov_legal:
+            self.juega_ficha(mov, self.tablero[-1][1] if self.tablero else 0)
+            eval_puntuacion = self.minimax(depth - 1, False)  # Use the minimax function
             
-            if eval_score > best_score:
-                best_score = eval_score
-                best_move = move
+            if eval_puntuacion > mejor_puntuacion:
+                mejor_puntuacion = eval_puntuacion
+                mejor_mov = mov
 
-            if self.board:
-                self.board.pop()
-            self.hands[self.current_player].append(move)
+            if self.tablero:
+                self.tablero.pop()
+            self.manos[self.jugador_actual].append(mov)
 
-            if time_limit and time.time() - start_time >= time_limit:
+            if limite_tiempo and time.time() - empieza_tiempo >= limite_tiempo:
                 break
 
-        return best_move
+        return mejor_mov
 
-    def play_game(self, max_depth, time_limit=None):
-        while not self.is_game_over():
-            print("\nCurrent state:")
-            print(self.get_current_state())
-            print(f"{self.current_player}'s turn")
+    def jugar(self, max_depth, limite_tiempo=None):
+        while not self.acabo_juego():
+            print("\nEstado actual del juego:")
+            print(self.get_estado_actual())
+            print(f"Turno de: {self.jugador_actual}")
 
-            if self.current_player == "Computer":
-                # Computer player's turn
-                best_move = self.choose_best_move(max_depth, time_limit)
-                if best_move:
-                    print(f"Computer plays {best_move}")
-                    self.play_domino(best_move, self.board[-1][1] if self.board else 0)
+            if self.jugador_actual == "Computadora":
+                # Computadora jugador's turn
+                mejor_mov = self.escoge_mejor_mov(max_depth, limite_tiempo)
+                if mejor_mov:
+                    print(f"Movimiento de la computadora: {mejor_mov}")
+                    self.juega_ficha(mejor_mov, self.tablero[-1][1] if self.tablero else 0)
                 else:
-                    print("Computer has no valid moves.")
+                    print("La computadora no tiene movimientos válidos.")
             else:
-                # Human player's turn
-                print(f"Your available dominos: {self.players['Human']['hand']}")
-                valid_move = False
-                while not valid_move:
+                # Human jugador's turn
+                print(f"Tus fichas disponibles: {self.jugadores['Jugador']['mano']}") # 'Human' 'hand' ?
+                mov_valido = False
+                while not mov_valido:
                     try:
-                        domino_index = int(input("Enter the index of the domino you want to play: "))
-                        domino = self.players['Human']['hand'][domino_index]
-                        if self.is_valid_move(domino):
-                            self.play_domino(domino, self.board[-1][1] if self.board else 0)
-                            valid_move = True
+                        no_de_la_ficha = int(input("Escribe el numero de la ficha que deseas colocar: "))
+                        domino = self.jugadores['Jugador']['mano'][no_de_la_ficha]
+                        if  domino in self.mov_legales: # self.es_mov_valido(domino):
+                            self.juega_ficha(domino, self.tablero[-1][1] if self.tablero else 0)
+                            mov_valido = True
                         else:
-                            print("Invalid move. Please try again.")
+                            print("Movimiento inválido.")
                     except (ValueError, IndexError):
-                        print("Invalid input. Please enter a valid index.")
+                        print("Movimiento inválido. Inténtalo de nuevo.")
 
-            # Switch to the next player's turn
-            self.switch_player()
+            # Switch to the next jugador's turn
+            self.cambiar_jugador()
 
-        print("\nGame Over!")
-        print("Final state:")
-        print(self.get_current_state())
+        print("\nFin del juego.")
+        print("Estado final:")
+        print(self.get_estado_actual())
 
-    def store_game_state(self):
+    def guarda_estado_del_juego(self):
         # Store the current game state for possible undo
         state = {
-            "current_player": self.current_player,
-            "board": self.board.copy(),
-            "hands": {player: hand.copy() for player, hand in self.hands.items()},
+            "jugador_actual": self.jugador_actual,
+            "tablero": self.tablero.copy(),
+            "manos": {jugador: hand.copy() for jugador, hand in self.manos.items()},
         }
-        self.game_states.append(state)
+        self.estados_del_juego.append(state)
 
-    def undo(self):
+    def control_z(self):
         # Revert to the previous game state
-        if len(self.game_states) >= 2:
-            self.game_states.pop()  # Remove the current state
-            previous_state = self.game_states.pop()  # Get the previous state
-            self.current_player = previous_state["current_player"]
-            self.board = previous_state["board"]
-            self.hands = previous_state["hands"]
+        if len(self.estados_del_juego) >= 2:
+            self.estados_del_juego.pop()  # Remove the current state
+            estado_previo = self.estados_del_juego.pop()  # Get the previous state
+            self.jugador_actual = estado_previo["jugador_actual"]
+            self.tablero = estado_previo["tablero"]
+            self.manos = estado_previo["manos"]
             
