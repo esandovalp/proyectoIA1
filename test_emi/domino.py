@@ -116,10 +116,6 @@ class Game:
             
             left, right = map(int, move.split(","))
             selected_tile = Domino(left, right)
-            
-            if selected_tile not in self.player_hand:
-                print("\nYou don't have that tile in your hand. Please select a valid domino or draw from the pool.\n")
-                continue
 
             direction = None
 
@@ -128,24 +124,19 @@ class Game:
             else:
                 if selected_tile.right == self.board[0].left:
                     direction = "left"
-                    selected_tile.flip()
                 elif selected_tile.left == self.board[0].left:
                     direction = "left"
                 elif selected_tile.left == self.board[-1].right:
                     direction = "right"
                 elif selected_tile.right == self.board[-1].right:
                     direction = "right"
-                    selected_tile.flip()
-            
-            if self.board:
-                if direction == "left" and selected_tile.right != self.board[0].left:
-                    selected_tile.flip()
-                elif direction == "right" and selected_tile.left != self.board[-1].right:
-                    selected_tile.flip()
-
-            
 
             if direction:
+                # Check if the tile is in the player's hand
+                if selected_tile not in self.player_hand:
+                    print("\nYou don't have that tile in your hand. Please select a valid domino or draw from the pool.\n")
+                    continue
+
                 for tile in self.player_hand:
                     if tile == selected_tile:
                         self.player_hand.remove(tile)
@@ -153,6 +144,7 @@ class Game:
                 return selected_tile, direction
 
             print("\nInvalid move. Please select a valid domino or draw from the pool.\n")
+
 
             
     def minimax_move(self, hand):
