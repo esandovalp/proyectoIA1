@@ -48,6 +48,10 @@ class Game:
         return [tile for tile in hand if tile.left == left or tile.right == left or tile.left == right or tile.right == right]
 
     def play(self):
+        
+        if input("Would you like to manually assign tiles? (yes/no): ").strip().lower() == "yes":
+            self.manual_tile_assignment()
+            
         # Determine the starting player based on the highest "fine"
         player_max_fine = max(self.player_hand, key=domino_fine)
         computer_max_fine = max(self.computer_hand, key=domino_fine)
@@ -60,6 +64,10 @@ class Game:
         print(f"{turn} starts the game.\n")
 
         while True:
+            
+            print(f"Computer's hand: {self.computer_hand}\n")
+            # Display pool
+            print(f"Pool: {self.pool}\n")
             self.save_state()
             if turn == "Player":
                 move, direction = self.get_player_move()  # Get the move and the direction
@@ -94,32 +102,32 @@ class Game:
             if len(self.pool) == 0 and not self.possible_moves(self.computer_hand) and not self.possible_moves(self.player_hand):
                 print("\nIt's a draw!")
                 break
-
+            
     def get_player_move(self):
         possible = self.possible_moves(self.player_hand)
 
+        while not possible and self.pool:
+            input("No valid moves. Press enter to draw from the pool...")
+            tile = self.pool.pop()
+            self.player_hand.append(tile)
+            print(f"You drew {tile} from the pool.\n")
+            possible = self.possible_moves(self.player_hand)
+
+        # If the pool is empty and no valid move can be made
         if not possible:
-            if self.pool:
-                tile = self.pool.pop()
-                self.player_hand.append(tile)
-                print(f"You drew {tile} from the pool.\n")
             return None, None
 
         while True:
             print(f"Your hand: {self.player_hand}\n")
             print(f"Board: {self.board}\n")
             move = input("Enter your move (e.g. 2,1) or undo to revert to last move: ")
-            
+
             if move.lower() == 'undo':
                 self.undo_last_move()
                 continue
             
             left, right = map(int, move.split(","))
             selected_tile = Domino(left, right)
-            
-            if selected_tile not in self.player_hand:
-                print("\nYou don't have that tile in your hand. Please select a valid domino or draw from the pool.\n")
-                continue
 
             direction = None
 
@@ -128,24 +136,19 @@ class Game:
             else:
                 if selected_tile.right == self.board[0].left:
                     direction = "left"
-                    selected_tile.flip()
                 elif selected_tile.left == self.board[0].left:
                     direction = "left"
                 elif selected_tile.left == self.board[-1].right:
                     direction = "right"
                 elif selected_tile.right == self.board[-1].right:
                     direction = "right"
-                    selected_tile.flip()
-            
-            if self.board:
-                if direction == "left" and selected_tile.right != self.board[0].left:
-                    selected_tile.flip()
-                elif direction == "right" and selected_tile.left != self.board[-1].right:
-                    selected_tile.flip()
-
-            
 
             if direction:
+                # Check if the tile is in the player's hand
+                if selected_tile not in self.player_hand:
+                    print("\nYou don't have that tile in your hand. Please select a valid domino or draw from the pool.\n")
+                    continue
+
                 for tile in self.player_hand:
                     if tile == selected_tile:
                         self.player_hand.remove(tile)
@@ -216,7 +219,21 @@ class Game:
         self.computer_hand = state["computer_hand"]
         self.pool = state["pool"]
 
+    def manual_tile_assignment(self):
+        self.player_hand = []
+        self.computer_hand = []
 
+        print("Assigning tiles for Player:")
+        for i in range(7):  # assuming each player gets 7 tiles to start
+            tile = input(f"Enter tile {i+1} for Player (e.g. 2,1): ")
+            left, right = map(int, tile.split(","))
+            self.player_hand.append(Domino(left, right))
+
+        print("\nAssigning tiles for Computer:")
+        for i in range(7):  # assuming each player gets 7 tiles to start
+            tile = input(f"Enter tile {i+1} for Computer (e.g. 2,1): ")
+            left, right = map(int, tile.split(","))
+            self.computer_hand.append(Domino(left, right))
 
 
 Game().play()
