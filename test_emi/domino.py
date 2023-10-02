@@ -77,6 +77,12 @@ class Game:
                         self.board.insert(0, move)
                     else:
                         self.board.append(move)
+                
+                # After player makes a move:
+                if not self.player_hand:
+                    print("Congratulations! You've won!")
+                    return
+
                 turn = 'Computer'
             else:
                 move, direction = self.minimax_move(self.computer_hand)
@@ -86,6 +92,12 @@ class Game:
                         self.board.insert(0, move)
                     else:
                         self.board.append(move)
+                
+                # After computer makes a move:
+                if not self.computer_hand:
+                    print("Computer wins!")
+                    return
+
                 turn = "Player"
 
             if len(self.pool) == 0 and not self.possible_moves(self.computer_hand) and not self.possible_moves(self.player_hand):
@@ -122,6 +134,10 @@ class Game:
             
             left, right = map(int, move.split(","))
             selected_tile = Domino(left, right)
+            
+            if selected_tile not in self.player_hand:
+                print("\nYou don't have that tile in your hand. Please select a valid domino or draw from the pool.\n")
+                continue
 
             direction = None
 
@@ -192,7 +208,7 @@ class Game:
             # Ensure correct orientation of the tile relative to the board
         if direction == "left" and move.right != self.board[0].left:
             move.flip()
-        elif direction == "right" and move.left != self.board[-1].right:
+        elif self.board and direction == "right" and move.left != self.board[-1].right:
             move.flip()
         
         self.computer_hand.remove(move)
