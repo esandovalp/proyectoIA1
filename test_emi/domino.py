@@ -1,132 +1,187 @@
 import random
 
 class Domino:
+    """
+        Inicializa una ficha de dominó con dos extremos: izquierdo y derecho.
+
+        Parámetros:
+        - izquierda (int): El valor del extremo izquierdo del dominó.
+        - right (int): El valor del lado derecho del dominó.
+        """
     def __init__(self, left, right):
         self.left = left
         self.right = right
         
+    """
+        Voltea el dominó, intercambiando sus valores izquierdo y derecho.
+
+        Devuelve:
+        - Dominó: Devuelve la instancia de dominó volteada.
+        """
     def flip(self):
         self.left, self.right = self.right, self.left
         return self
 
+    """
+        Devuelve una representación en forma de cadena de la ficha de dominó.
+        """
     def __repr__(self):
         return f"({self.left},{self.right})"
     
+    """
+        Comprueba si dos fichas de dominó son iguales. 
+        Dos fichas de dominó se consideran iguales si sus valores, independientemente de la orientación, son iguales.
+
+        Parámetros:
+        - other (Dominó): La otra ficha de dominó con la que comparar.
+
+        Devuelve:
+        - bool: True si las fichas de dominó son iguales, False en caso contrario.
+        """
     def __eq__(self, other):
         return (self.left == other.left and self.right == other.right) or \
            (self.left == other.right and self.right == other.left)
-           
-def domino_fine(domino):
+
+"""
+    Calcula la suma de los dos extremos de una ficha de dominó.
+
+    Parámetros:
+    - dominó (Dominó): La ficha de dominó cuya suma de extremos hay que calcular.
+
+    Devuelve:
+    - int: La suma de los dos extremos del dominó.
+    """         
+def mula(domino):
         return domino.left + domino.right
 
 class Game:
+    """
+        Inicializa el juego creando un juego completo de fichas de dominó, barajándolas y distribuyéndolas entre el jugador, el ordenador y la reserva.
+        """
     def __init__(self):
         self.tiles = [Domino(a, b) for a in range(7) for b in range(a, 7)]
         random.shuffle(self.tiles)
         
-        self.player_hand = self.tiles[:7]
-        self.computer_hand = self.tiles[7:14]
+        self.jugador_hand = self.tiles[:7]
+        self.computadora_hand = self.tiles[7:14]
         self.pool = self.tiles[14:]
-        self.board = []
+        self.tablero = []
         self.history = []
     
-    def display_board(self):
-        if len(self.board) == 0:
-            print("Board: []\n")
-        elif len(self.board) == 1:
-            print(f"Board: {self.board}\n")
-        elif len(self.board) == 2:
-            print(f"Board: {self.board[0]}, {self.board[1]}\n")
+    """
+        Muestra el estado actual del tablero de forma concisa, mostrando sólo el principio, el final y el recuento de las fichas intermedias.
+        """
+    def display_tablero(self):
+        if len(self.tablero) == 0:
+            print("tablero: []\n")
+        elif len(self.tablero) == 1:
+            print(f"tablero: {self.tablero}\n")
+        elif len(self.tablero) == 2:
+            print(f"tablero: {self.tablero[0]}, {self.tablero[1]}\n")
         else:
-            print(f"Board: {self.board[0]}, ...{len(self.board) - 2} tiles..., {self.board[-1]}\n")
+            print(f"tablero: {self.tablero[0]}, ...{len(self.tablero) - 2} tiles..., {self.tablero[-1]}\n")
     
+    """
+        Determina los posibles movimientos que un jugador o la computadora pueden hacer basándose en el estado actual del tablero.
+
+        Parámetros:
+        - mano (lista[Dominó]): El conjunto de fichas de dominó que tiene el jugador o la computadora.
+
+        Devuelve:
+        - list[Dominó]: Una lista de fichas de dominó válidas que se pueden jugar.
+        """
     def possible_moves(self, hand):
-        if not self.board:
+        if not self.tablero:
             return hand
 
-        left, right = self.board[0].left, self.board[-1].right
+        left, right = self.tablero[0].left, self.tablero[-1].right
         return [tile for tile in hand if tile.left == left or tile.right == left or tile.left == right or tile.right == right]
 
+
+    # Inicia y ejecuta el bucle principal del juego en el que el jugador y el ordenador se turnan para jugar.
+        
     def play(self):
-        if input("Would you like to manually assign tiles? (yes/no): ").strip().lower() == "yes":
+        if input("Quieres asignar manualmente las fichas? (si/no): ").strip().lower() == "si":
             self.manual_tile_assignment()
         
-        # Determine the starting player based on the highest "fine"
-        player_max_fine = max(self.player_hand, key=domino_fine)
-        computer_max_fine = max(self.computer_hand, key=domino_fine)
+        # Determina quien empieza el juego
+        jugador_max_fine = max(self.jugador_hand, key=mula)
+        computadora_max_fine = max(self.computadora_hand, key=mula)
 
-        if domino_fine(player_max_fine) >= domino_fine(computer_max_fine):
-            turn = "Player"
+        if mula(jugador_max_fine) >= mula(computadora_max_fine):
+            turn = "jugador"
         else:
-            turn = "Computer"
+            turn = "computadora"
 
-        print(f"{turn} starts the game.\n")
+        print(f"{turn} empieza el juego.\n")
 
         while True:
             
             
-            print(f"Computer's hand: {self.computer_hand}\n")
-            # Display pool
-            print(f"Pool: {self.pool}\n")
+            print(f"Mano de la computadora: {self.computadora_hand}\n")
+            # Sopa de fichas
+            print(f"Sopa: {self.pool}\n")
             
             self.save_state()
-            if turn == "Player":
-                move, direction = self.get_player_move()  # Get the move and the direction
+            if turn == "jugador":
+                move, direction = self.get_jugador_move()  
                 if move:
                     if direction == "left":
-                        self.board.insert(0, move)
+                        self.tablero.insert(0, move)
                     else:
-                        self.board.append(move)
+                        self.tablero.append(move)
                 
-                # After player makes a move:
-                if not self.player_hand:
-                    print("Congratulations! You've won!")
+                if not self.jugador_hand:
+                    print("Ganasteeeee :D")
                     return
 
-                turn = 'Computer'
+                turn = 'computadora'
             else:
-                move, direction = self.minimax_move(self.computer_hand)
+                move, direction = self.minimax_move(self.computadora_hand)
                 if move:
-                    print(f"\nComputer played: {move}\n")
+                    print(f"\nLa computadora jugó: {move}\n")
                     if direction == "left":
-                        self.board.insert(0, move)
+                        self.tablero.insert(0, move)
                     else:
-                        self.board.append(move)
+                        self.tablero.append(move)
                 
-                # After computer makes a move:
-                if not self.computer_hand:
-                    print("Computer wins!")
+                if not self.computadora_hand:
+                    print("computadora gana")
                     return
 
-                turn = "Player"
+                turn = "jugador"
 
-            if len(self.pool) == 0 and not self.possible_moves(self.computer_hand) and not self.possible_moves(self.player_hand):
-                print("\nIt's a draw!")
+            if len(self.pool) == 0 and not self.possible_moves(self.computadora_hand) and not self.possible_moves(self.jugador_hand):
+                print("\nEmpate :/!")
                 break
 
-    def get_player_move(self):
-        possible = self.possible_moves(self.player_hand)
+
+        #Solicita un movimiento al jugador. Si el jugador no puede realizar un movimiento, permite robar de la reserva o deshacer el último movimiento.
+
+        #Devuelve:
+        #tupla: Una tupla que contiene la ficha de dominó seleccionada y la dirección en la que jugarla ("izquierda" o "derecha").
+        
+    def get_jugador_move(self):
+        possible = self.possible_moves(self.jugador_hand)
 
         while not possible and self.pool:
-            input("No valid moves. Press enter to draw from the pool...")
+            input("Comes! presiona enter")
             tile = self.pool.pop()
-            self.player_hand.append(tile)
-            print(f"You drew {tile} from the pool.\n")
-            possible = self.possible_moves(self.player_hand)
-
-        # If the pool is empty and no valid move can be made
+            self.jugador_hand.append(tile)
+            print(f"Sacaste {tile} de la sopa.\n")
+            possible = self.possible_moves(self.jugador_hand)
 
         if not possible:
             if self.pool:
                 tile = self.pool.pop()
-                self.player_hand.append(tile)
-                print(f"You drew {tile} from the pool.\n")
+                self.jugador_hand.append(tile)
+                print(f"Sacaste {tile} de la sopa.\n")
             return None, None
 
         while True:
-            print(f"Your hand: {self.player_hand}\n")
-            print(f"Board: {self.board}\n")
-            move = input("Enter your move (e.g. 2,1) or undo to revert to last move: ")
+            print(f"Tu mano: {self.jugador_hand}\n")
+            print(f"tablero: {self.tablero}\n")
+            move = input("Pon la ficha que deseas (e.g. 2,1) o undo para regresar al ultimo movimiento: ")
             
             if move.lower() == 'undo':
                 self.undo_last_move()
@@ -135,69 +190,78 @@ class Game:
             left, right = map(int, move.split(","))
             selected_tile = Domino(left, right)
             
-            if selected_tile not in self.player_hand:
-                print("\nYou don't have that tile in your hand. Please select a valid domino or draw from the pool.\n")
+            if selected_tile not in self.jugador_hand:
+                print("\nNo tienes esa ficha, come de la sopa o pon una que si este!!.\n")
                 continue
 
             direction = None
 
-            if not self.board:
+            if not self.tablero:
                 direction = "right"
             else:
-                if selected_tile.right == self.board[0].left:
+                if selected_tile.right == self.tablero[0].left:
                     direction = "left"
                     selected_tile.flip()
-                elif selected_tile.left == self.board[0].left:
+                elif selected_tile.left == self.tablero[0].left:
                     direction = "left"
-                elif selected_tile.left == self.board[-1].right:
+                elif selected_tile.left == self.tablero[-1].right:
                     direction = "right"
-                elif selected_tile.right == self.board[-1].right:
+                elif selected_tile.right == self.tablero[-1].right:
                     direction = "right"
                     selected_tile.flip()
             
-            if self.board:
-                if direction == "left" and selected_tile.right != self.board[0].left:
+            if self.tablero:
+                if direction == "left" and selected_tile.right != self.tablero[0].left:
                     selected_tile.flip()
-                elif direction == "right" and selected_tile.left != self.board[-1].right:
+                elif direction == "right" and selected_tile.left != self.tablero[-1].right:
                     selected_tile.flip()
 
             
 
             if direction:
-                for tile in self.player_hand:
+                for tile in self.jugador_hand:
                     if tile == selected_tile:
-                        self.player_hand.remove(tile)
+                        self.jugador_hand.remove(tile)
                         break
                 return selected_tile, direction
 
-            print("\nInvalid move. Please select a valid domino or draw from the pool.\n")
+            print("\nMovimiento invalido. Selecciona una valida o come de la sopa.\n")
 
             
+            """
+        Calcula la mejor jugada para el ordenador basándose en una simple estrategia minimax.
+
+        Parámetros:
+        - mano (lista[Dominó]): El conjunto de fichas de dominó que tiene la computadora.
+
+        Devuelve:
+        - tupla: Una tupla que contiene la ficha de dominó seleccionada y la dirección en la que jugarla ("izquierda" o "derecha").
+        """
     def minimax_move(self, hand):
         moves = self.possible_moves(hand)
 
         if not moves:
             if self.pool:
                 tile = self.pool.pop()
-                self.computer_hand.append(tile)
+                self.computadora_hand.append(tile)
             return None, None
 
         valid_moves = []
 
-        if not self.board:
+        if not self.tablero:
             valid_moves = [(move, "right") for move in moves]
         else:
             for move in moves:
-                # Check if move matches the left end of the board
-                if move.right == self.board[0].left:
+                # Comprueba si move coincide con el extremo izquierdo del tablero
+                if move.right == self.tablero[0].left:
                     valid_moves.append((move.flip(), "left"))
-                elif move.left == self.board[0].left:
+                elif move.left == self.tablero[0].left:
                     valid_moves.append((move, "left"))
                     
-                # Check if move matches the right end of the board
-                elif move.left == self.board[-1].right:
+                # Comprueba si move coincide con el extremo derecho del tablero
+                elif move.left == self.tablero[-1].right:
                     valid_moves.append((move, "right"))
-                elif move.right == self.board[-1].right:
+                elif move.right == self.tablero[-1].right:
                     valid_moves.append((move.flip(), "right"))
 
         if not valid_moves:
@@ -205,51 +269,74 @@ class Game:
 
         move, direction = random.choice(valid_moves)
         
-            # Ensure correct orientation of the tile relative to the board
-        if direction == "left" and move.right != self.board[0].left:
+            # Asegurar la correcta orientación de la ficha respecto al tablero
+        if direction == "left" and move.right != self.tablero[0].left:
             move.flip()
-        elif self.board and direction == "right" and move.left != self.board[-1].right:
+        elif self.tablero and direction == "right" and move.left != self.tablero[-1].right:
             move.flip()
         
-        self.computer_hand.remove(move)
+        self.computadora_hand.remove(move)
         return move, direction
 
+
+    #Guarda el estado actual de la partida, incluyendo el tablero, la mano del jugador, la mano de la computadora y el pool en el historial.
+        
     def save_state(self):
         state = {
-            "board": self.board.copy(),
-            "player_hand": self.player_hand.copy(),
-            "computer_hand": self.computer_hand.copy(),
+            "tablero": self.tablero.copy(),
+            "jugador_hand": self.jugador_hand.copy(),
+            "computadora_hand": self.computadora_hand.copy(),
             "pool": self.pool.copy()
         }
         self.history.append(state)
 
+
+    # Devuelve el juego al estado anterior guardado en el historial, deshaciendo efectivamente el último movimiento.
+        
     def undo_last_move(self):
         if not self.history:
-            print("No moves to undo!")
+            print("No hay movimientos!")
             return
 
         state = self.history.pop()
-        self.board = state["board"]
-        self.player_hand = state["player_hand"]
-        self.computer_hand = state["computer_hand"]
+        self.tablero = state["tablero"]
+        self.jugador_hand = state["jugador_hand"]
+        self.computadora_hand = state["computadora_hand"]
         self.pool = state["pool"]
 
 
+    # Permite al usuario distribuir manualmente las fichas de dominó entre el jugador, el ordenador y la reserva.
+        
     def manual_tile_assignment(self):
-        self.player_hand = []
-        self.computer_hand = []
+        all_tiles = set()  #Lleve un registro de todas las fichas añadidas para evitar repeticiones
+        
+        def get_unique_tile():
+            while True:
+                tile = input("Pon una ficha (e.g. 2,1) o escribe 'done' para terminar: ")
+                if tile == "done":
+                    return None
+                left, right = map(int, tile.split(","))
+                if (left, right) not in all_tiles and (right, left) not in all_tiles:
+                    all_tiles.add((left, right))
+                    return Domino(left, right)
+                else:
+                    print("Ya se agregó esta ficha, pon otra.")
 
-        print("Assigning tiles for Player:")
-        for i in range(7):  # assuming each player gets 7 tiles to start
-            tile = input(f"Enter tile {i+1} for Player (e.g. 2,1): ")
-            left, right = map(int, tile.split(","))
-            self.player_hand.append(Domino(left, right))
+        print("Fichas para el jugador:")
+        for i in range(7): 
+            self.jugador_hand.append(get_unique_tile())
 
-        print("\nAssigning tiles for Computer:")
-        for i in range(7):  # assuming each player gets 7 tiles to start
-            tile = input(f"Enter tile {i+1} for Computer (e.g. 2,1): ")
-            left, right = map(int, tile.split(","))
-            self.computer_hand.append(Domino(left, right))
+        print("\nFichas para la computadora:")
+        for i in range(7):  
+            self.computadora_hand.append(get_unique_tile())
+
+        print("\nFichas para la sopa:")
+        while True:
+            tile = get_unique_tile()
+            if tile:
+                self.pool.append(tile)
+            else:
+                break
 
 
 Game().play()
