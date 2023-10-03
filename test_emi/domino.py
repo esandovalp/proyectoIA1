@@ -137,7 +137,7 @@ class Game:
 
                 turn = 'computadora'
             else:
-                move, direction = self.minimax_move(self.computadora_hand)
+                _, move, direction = self.minimax_move(self.computadora_hand, 3, True)
                 if move:
                     print(f"\nLa computadora jugó: {move}\n")
                     if direction == "left":
@@ -228,55 +228,93 @@ class Game:
             print("\nMovimiento invalido. Selecciona una valida o come de la sopa.\n")
 
             
-            """
-        Calcula la mejor jugada para el ordenador basándose en una simple estrategia minimax.
-
-        Parámetros:
-        - mano (lista[Dominó]): El conjunto de fichas de dominó que tiene la computadora.
-
-        Devuelve:
-        - tupla: Una tupla que contiene la ficha de dominó seleccionada y la dirección en la que jugarla ("izquierda" o "derecha").
-        """
-    def minimax_move(self, hand):
+    def minimax_move(self, hand, depth, is_maximizing):
         moves = self.possible_moves(hand)
 
-        if not moves:
-            if self.pool:
-                tile = self.pool.pop()
-                self.computadora_hand.append(tile)
-            return None, None
+        # Caso base: si no hay jugadas posibles o se acaba la partida
+        if not moves or depth == 0 or len(self.pool) == 0 and not self.possible_moves(self.computadora_hand) and not self.possible_moves(self.jugador_hand):
+            # Heurística: simplemente la diferencia en dominoes 
+            return len(self.jugador_hand) - len(self.computadora_hand), None, None
 
-        valid_moves = []
+        # Turno computadora, maximizando el puntaje
+        if is_maximizing:
+            max_eval = float('-inf')
+            best_move = None
+            best_dir = None
 
-        if not self.tablero:
-            valid_moves = [(move, "right") for move in moves]
-        else:
             for move in moves:
-                # Comprueba si move coincide con el extremo izquierdo del tablero
-                if move.right == self.tablero[0].left:
-                    valid_moves.append((move.flip(), "left"))
-                elif move.left == self.tablero[0].left:
-                    valid_moves.append((move, "left"))
+                self.computadora_hand.remove(move)
+                if not self.tablero:
+                    self.tablero.append(move)
+                    direction = "right"
+                else:
+                    direction = None
+                    if move.right == self.tablero[0].left:
+                        self.tablero.insert(0, move.flip())
+                        direction = "left"
+                    elif move.left == self.tablero[0].left:
+                        self.tablero.insert(0, move)
+                        direction = "left"
+                    elif move.left == self.tablero[-1].right:
+                        self.tablero.append(move)
+                        direction = "right"
+                    elif move.right == self.tablero[-1].right:
+                        self.tablero.append(move.flip())
+                        direction = "right"
                     
-                # Comprueba si move coincide con el extremo derecho del tablero
-                elif move.left == self.tablero[-1].right:
-                    valid_moves.append((move, "right"))
-                elif move.right == self.tablero[-1].right:
-                    valid_moves.append((move.flip(), "right"))
+                eval_score, _, _ = self.minimax_move(self.jugador_hand, depth-1, False)
 
-        if not valid_moves:
-            return None, None
+                # Undo el movimiento    
+                if direction == "left":
+                    self.tablero.pop(0)
+                else:
+                    self.tablero.pop()
+                self.computadora_hand.append(move)
 
-        move, direction = random.choice(valid_moves)
-        
-            # Asegurar la correcta orientación de la ficha respecto al tablero
-        if direction == "left" and move.right != self.tablero[0].left:
-            move.flip()
-        elif self.tablero and direction == "right" and move.left != self.tablero[-1].right:
-            move.flip()
-        
-        self.computadora_hand.remove(move)
-        return move, direction
+                if eval_score > max_eval:
+                    max_eval = eval_score
+                    best_move = move
+                    best_dir = direction
+
+            return max_eval, best_move, best_dir
+
+        # Turno del jugador (minimizar)
+        else:
+            min_eval = float('inf')
+            for move in moves:
+                self.jugador_hand.remove(move)
+                if not self.tablero:
+                    self.tablero.append(move)
+                    direction = "right"
+                else:
+                    direction = None
+                    if move.right == self.tablero[0].left:
+                        self.tablero.insert(0, move.flip())
+                        direction = "left"
+                    elif move.left == self.tablero[0].left:
+                        self.tablero.insert(0, move)
+                        direction = "left"
+                    elif move.left == self.tablero[-1].right:
+                        self.tablero.append(move)
+                        direction = "right"
+                    elif move.right == self.tablero[-1].right:
+                        self.tablero.append(move.flip())
+                        direction = "right"
+
+                eval_score, _, _ = self.minimax_move(self.computadora_hand, depth-1, True)
+
+                # Undo the move
+                if direction == "left":
+                    self.tablero.pop(0)
+                else:
+                    self.tablero.pop()
+                self.jugador_hand.append(move)
+
+                if eval_score < min_eval:
+                    min_eval = eval_score
+
+            return min_eval, None, None  # We only return moves for the computer, not the player
+
 
 
     #Guarda el estado actual de la partida, incluyendo el tablero, la mano del jugador, la mano de la computadora y el pool en el historial.
